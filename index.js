@@ -26,13 +26,6 @@ let mouseConstraint = Matter.MouseConstraint.create(engine, {
 });
 render.mouse = mouse;
 
-// place ball in top center of canvas
-let ball = Matter.Bodies.circle(600, 50, 25, { restitution: 0.8 });
-let sling = Matter.Constraint.create({
-    pointA: { x: 600, y: 150 },
-    bodyB: ball,
-    stiffness: 0.005
-});
 
 // RANDOM BODIES
 
@@ -60,36 +53,50 @@ let stack = Matter.Composites.stack(800, 270, 20, 20, 0, 0, function (x, y) {
 
 });
 
-// Create firing event for ball and sling
+// BALL AND SLING
+
+// place ball in top center of canvas
+let ball = Matter.Bodies.circle(600, 50, 25, { restitution: 0.8 });
+let sling = Matter.Constraint.create({
+    pointA: { x: 600, y: 150 },
+    bodyB: ball,
+    stiffness: 0.005
+});
+
+// Create firing event for ball and sling that releases the ball
 let firing = false;
 let fire = function (event) {
     if (firing) {
-        return;
-    }
-    firing = true;
-    let mousePosition = mouse.position;
-    let angle = Math.atan2(mousePosition.y - 150, mousePosition.x - 600);
-    let velocity = Matter.Vector.create(Math.cos(angle) * 0.5, Math.sin(angle) * 0.5);
-    Matter.Body.setVelocity(ball, velocity);
-    Matter.Body.setPosition(ball, { x: 600, y: 150 });
-
-    setTimeout(function () {
         firing = false;
-    }, 1000);
+        Matter.Body.setPosition(ball, { x: 600, y: 50 });
+        Matter.Body.setVelocity(ball, { x: 0, y: 0 });
+        Matter.Body.setAngularVelocity(ball, 0);
+        Matter.Body.setStatic(ball, true);
+        sling.pointA = { x: 600, y: 150 };
+    }
+    else {
+        firing = true;
+        Matter.Body.setStatic(ball, false);
+        sling.pointA = { x: 600, y: 50 };
+    }
 };
-
-
-  
+const randomRadius = () => {
+    return Math.floor(Math.random() * 50) + 10;
+}
 
 Matter.Events.on(engine, 'collisionStart', function (event) {
     let body = event.pairs[0].bodyA;
     let velocity = body.velocity;
-    let radius = body.circleRadius;
+    let radius = randomRadius();
     let volume = Math.min(Math.abs(velocity.x) + Math.abs(velocity.y), 1);
-    let pitch = radius * 10 + 220;
+    // pitch is quantized to A major pentatonic scale
+    let pitch = Math.floor((velocity.x + 100) / 50) + 1;
+    //adjust pitch to be in the range of 220Hz to 440Hz
+    pitch = pitch * 220;
+
     let synth = new Tone.Synth().toDestination();
     // Only trigger synth if body is moving fast enough
-    if (volume > .8) {
+    if (volume > .99) {
         synth.triggerAttackRelease(pitch, '8n', undefined, volume);
         console.log("PITCH", pitch, "VOLUME", volume);
     }
@@ -97,6 +104,20 @@ Matter.Events.on(engine, 'collisionStart', function (event) {
     setInterval(function () {
         synth.dispose();
     }, 1000);
+});
+
+// add soft wind effect to bodies from left to right
+Matter.Events.on(engine, 'beforeUpdate', function (event) {
+    let bodies = Matter.Composite.allBodies(engine.world);
+    for (let i = 0; i < bodies.length; i++) {
+        let body = bodies[i];
+        if (body.position.x < 600) {
+            Matter.Body.applyForce(body, { x: 0, y: 0 }, { x: .0001, y: 0 });
+        }
+        else {
+            Matter.Body.applyForce(body, { x: 0, y: 0 }, { x: .0001, y: 0 });
+        }
+    }
 });
 
 // START APP
