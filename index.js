@@ -169,10 +169,10 @@ Matter.Events.on(engine, 'collisionStart', function (event) {
             type: 'triangle'
         },
         envelope: {
-            attack: 0.01,
+            attack: 0.02,
             decay: 0.1,
             sustain: 0.2,
-            release: 0.5
+            release: 0.7
         }
     }).connect(reverb).toDestination();
     // synth.triggerAttackRelease(notePitch, '32n', undefined, volume);
@@ -180,7 +180,7 @@ Matter.Events.on(engine, 'collisionStart', function (event) {
     // Only trigger synth if body is moving fast enough
     // prevent two sounds from playing at once by checking if the synth is already playing
 
-    if (volume > .1 && !synth.playing) {
+    if (volume > .01 && !synth.playing) {
         console.log("PITCH", pitch, "VOLUME", volume);
         if(body.type === 'circle') {
             synth.triggerAttackRelease(notePitch, '32n', undefined, volume);
