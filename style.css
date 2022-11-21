@@ -1,5 +1,15 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 canvas {
-    position: relative;
     width: 500px;
     height: 400px;
     background-color: white;
