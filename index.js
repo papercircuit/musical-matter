@@ -12,9 +12,11 @@ let render = Matter.Render.create({
 
 // place ground at bottom of screen and set to screen width
 let ground = Matter.Bodies.rectangle(600, 800, 1200, 50, { isStatic: true });
+
 // place walls at sides of screen from ground to 50% screen height
 let leftWall = Matter.Bodies.rectangle(0, 400, 50, 800, { isStatic: true });
 let rightWall = Matter.Bodies.rectangle(1200, 400, 50, 800, { isStatic: true });
+
 
 let boxA = Matter.Bodies.rectangle(400, 200, 80, 80);
 let boxB = Matter.Bodies.rectangle(450, 50, 80, 80);
@@ -29,19 +31,22 @@ let mouseConstraint = Matter.MouseConstraint.create(engine, {
 });
 render.mouse = mouse;
 
-let ball = Matter.Bodies.circle(300, 600, 20);
+// place ball in top center of canvas
+let ball = Matter.Bodies.circle(600, 50, 25, { restitution: 0.8 });
 let sling = Matter.Constraint.create({
-    pointA: { x: 300, y: 600 },
+    pointA: { x: 600, y: 150 },
     bodyB: ball,
     stiffness: 0.005
 });
 
+// RANDOM BODIES
+
 let stack = Matter.Composites.stack(800, 270, 20, 20, 0, 0, function (x, y) {
     // create random body types and sizes 
-    let sides = Math.round(Matter.Common.random(1, 8));
+    let sides = Math.round(Matter.Common.random(4, 6));
     let options = {
         friction: 0.001,
-        restitution: 0.8,
+        restitution: 0.1,
         density: 100,
         mass: 100,
     };
@@ -60,19 +65,26 @@ let stack = Matter.Composites.stack(800, 270, 20, 20, 0, 0, function (x, y) {
 
 });
 
+// Create firing event for ball and sling
 let firing = false;
-Matter.Events.on(mouseConstraint, "enddrag", function (event) {
-    if (event.body === ball) firing = true;
-});
-
-Matter.Events.on(engine, 'afterUpdate', function () {
-    if (firing && Math.abs(ball.position.x - 300) < 20 && Math.abs(ball.position.y - 600) < 30) {
-        ball = Matter.Bodies.circle(300, 600, 20);
-        Matter.World.add(engine.world, ball);
-        sling.bodyB = ball;
-        firing = false;
+let fire = function (event) {
+    if (firing) {
+        return;
     }
-});
+    firing = true;
+    let mousePosition = mouse.position;
+    let angle = Math.atan2(mousePosition.y - 150, mousePosition.x - 600);
+    let velocity = Matter.Vector.create(Math.cos(angle) * 0.5, Math.sin(angle) * 0.5);
+    Matter.Body.setVelocity(ball, velocity);
+    Matter.Body.setPosition(ball, { x: 600, y: 150 });
+
+    setTimeout(function () {
+        firing = false;
+    }, 1000);
+};
+
+
+  
 
 Matter.Events.on(engine, 'collisionStart', function (event) {
     let body = event.pairs[0].bodyA;
@@ -91,6 +103,8 @@ Matter.Events.on(engine, 'collisionStart', function (event) {
         synth.dispose();
     }, 1000);
 });
+
+// START APP
 
 function startApp() {
     // only allow one click per page load
