@@ -17,11 +17,6 @@ let ground = Matter.Bodies.rectangle(600, 800, 1200, 50, { isStatic: true });
 let leftWall = Matter.Bodies.rectangle(0, 400, 50, 800, { isStatic: true });
 let rightWall = Matter.Bodies.rectangle(1200, 400, 50, 800, { isStatic: true });
 
-
-let boxA = Matter.Bodies.rectangle(400, 200, 80, 80);
-let boxB = Matter.Bodies.rectangle(450, 50, 80, 80);
-
-
 let mouse = Matter.Mouse.create(render.canvas);
 let mouseConstraint = Matter.MouseConstraint.create(engine, {
     mouse: mouse,
@@ -109,7 +104,7 @@ Matter.Events.on(engine, 'collisionStart', function (event) {
 function startApp() {
     // only allow one click per page load
     document.removeEventListener('click', startApp);
-    Matter.World.add(engine.world, [ground, leftWall, rightWall, boxA, boxB, ball, sling, stack, mouseConstraint]);
+    Matter.World.add(engine.world, [ground, leftWall, rightWall, ball, sling, stack, mouseConstraint]);
     Matter.Runner.run(engine);
     Matter.Render.run(render);
 }
