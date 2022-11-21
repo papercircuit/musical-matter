@@ -23,8 +23,8 @@ let render = Matter.Render.create({
 let ground = Matter.Bodies.rectangle(400, 1200, 810, 100, { isStatic: true });
 
 // place walls at sides of screen from ground to 50% screen height
-let leftWall = Matter.Bodies.rectangle(0, 600, 60, 1200, { isStatic: true });
-let rightWall = Matter.Bodies.rectangle(800, 600, 60, 1200, { isStatic: true });
+let leftWall = Matter.Bodies.rectangle(0, 400, 60, 1200, { isStatic: true });
+let rightWall = Matter.Bodies.rectangle(800, 400, 60, 1200, { isStatic: true });
 
 // create angular "walls" to keep ball in play
 let leftAngularWall1 = Matter.Bodies.rectangle(340, 200, 10, 200, { isStatic: true, angle: 2 });
