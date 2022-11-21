@@ -140,19 +140,27 @@ const randomRadius = () => {
 Matter.Events.on(engine, 'collisionStart', function (event) {
     let body = event.pairs[0].bodyA;
     let velocity = body.velocity;
-    let volume = Math.min(Math.abs(velocity.x * .05) + Math.abs(velocity.y * .05), 1);
+    let volume = Math.min(Math.abs(velocity.x * .08) + Math.abs(velocity.y * .08), 1);
 
-    // quantize pitch to C major pentatonic scale
-    let pitch = Math.round(body.position.x / 100) * 100;
+   
+    // pitch is determined by the body area
+    let pitch = Math.round(body.area / 100) * 100;
+
+    // normalize the a multiple of 100
     let note = Math.round(pitch / 100) % 5;
+
+     // quantize pitch to C major pentatonic scale
     let notes = [261.63, 329.63, 392, 523.25, 659.25];
+
+    // set note pitch to the quantized pitch
     let notePitch = notes[note];
+
     let noteDuration = 0.1;
 
-    // const reverb = new Tone.Reverb({
-    //     decay: 1,
-    //     preDelay: 0.01
-    // }).toDestination();
+    const reverb = new Tone.Reverb({
+        decay: 1,
+        preDelay: 0.01
+    }).toDestination();
 
 
     // play sound
@@ -163,14 +171,16 @@ Matter.Events.on(engine, 'collisionStart', function (event) {
         envelope: {
             attack: 0.01,
             decay: 0.1,
-            sustain: 0.8,
-            release: 0.3
+            sustain: 0.2,
+            release: 0.5
         }
-    }).toDestination();
-    synth.triggerAttackRelease(notePitch, '32n', undefined, volume);
+    }).connect(reverb).toDestination();
+    // synth.triggerAttackRelease(notePitch, '32n', undefined, volume);
 
     // Only trigger synth if body is moving fast enough
-    if (volume > .1) {
+    // prevent two sounds from playing at once by checking if the synth is already playing
+
+    if (volume > .1 && !synth.playing) {
         console.log("PITCH", pitch, "VOLUME", volume);
         if(body.type === 'circle') {
             synth.triggerAttackRelease(notePitch, '32n', undefined, volume);
@@ -188,11 +198,11 @@ Matter.Events.on(engine, 'collisionStart', function (event) {
 
     }
 
-
-    // refresh synth after 1 second (prevents bug where synth stops after a few seconds)
+    // refresh synth and effets (prevents bug where sound stops after a few seconds)
     setInterval(function () {
         synth.dispose();
-    }, 1000);
+        reverb.dispose();
+    }, 500);
 
     // change color of body on collision to random color
     body.render.fillStyle = `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)})`;
